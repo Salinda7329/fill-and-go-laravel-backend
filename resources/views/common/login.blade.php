@@ -84,17 +84,23 @@
                     const user = userCredential.user;
                     const idToken = await user.getIdToken();
                     // 2. Send ID token to backend for verification
-                    const response = await fetch('/firebase-login', {
+                    const response = await fetch('/create-session', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken // 👈 ADD THIS
+                            'X-CSRF-TOKEN': csrfToken
                         },
                         body: JSON.stringify({
                             idToken
                         })
                     });
+                    if (response.ok) {
+                        window.location.href = '/dashboard';
+                    } else {
+                        const result = await response.json();
+                        alert(result.message || 'Login failed.');
+                    }
+
                     const result = await response.json();
                     console.log('Backend response:', result);
                     if (response.ok && result.redirect_url) {
@@ -127,17 +133,23 @@
                 const user = result.user;
                 const idToken = await user.getIdToken();
 
-                const response = await fetch('/firebase-login', {
+                const response = await fetch('/create-session', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken // 👈 ADD THIS
+                        'X-CSRF-TOKEN': csrfToken
                     },
                     body: JSON.stringify({
-                        idToken: idToken
+                        idToken
                     })
                 });
+                if (response.ok) {
+                    window.location.href = '/dashboard';
+                } else {
+                    const result = await response.json();
+                    alert(result.message || 'Login failed.');
+                }
+
 
                 const resultData = await response.json();
 
@@ -162,17 +174,23 @@
                 const user = result.user;
                 const idToken = await user.getIdToken();
 
-                const response = await fetch('/firebase-login', {
+                const response = await fetch('/create-session', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken // 👈 ADD THIS
+                        'X-CSRF-TOKEN': csrfToken
                     },
                     body: JSON.stringify({
-                        idToken: idToken
+                        idToken
                     })
                 });
+                if (response.ok) {
+                    window.location.href = '/dashboard';
+                } else {
+                    const result = await response.json();
+                    alert(result.message || 'Login failed.');
+                }
+
 
                 const resultData = await response.json();
 

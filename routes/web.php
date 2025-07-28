@@ -19,3 +19,9 @@ Route::post('/customer/registerdata',[CustomerRegistrationController::class, 're
 Route::post('/create-session', [CustomerRegistrationController::class, 'createSession'])->name('createSession');
 
 //end customer routes
+
+//common routes
+Route::get('/login', function () {
+    return view('common.login');
+})->name('login');
+//end common routes
