@@ -10,7 +10,8 @@
 @section('page_content')
     <div class="login-container" style="margin-top:100pt;">
         <h2>Login</h2>
-        <form id="manualLoginForm" class="manual-login-form" method="POST" action="/api/manual-login" autocomplete="off">
+        <form id="manualLoginForm" class="manual-login-form" autocomplete="off">
+            @csrf
             <div class="form-group">
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" required autocomplete="username">
@@ -25,8 +26,8 @@
             <span class="error-message" id="manualLoginGlobalError"></span>
         </form>
         <div class="or-divider"><span>OR</span></div>
-        <button onclick="loginWithGoogle()" class="btn-google">Login with Google</button>
-        <button onclick="loginWithFacebook()" class="btn-facebook">Login with Facebook</button>
+        <button id="googleLoginButton" class="btn-google">Login with Google</button>
+        <button id="facebookLoginButton" class="btn-facebook">Login with Facebook</button>
     </div>
 @endsection
 
@@ -45,7 +46,6 @@
 
 @section('after_body_section')
     <script type="module">
-        // Firebase SDKs
         import {
             initializeApp
         } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
@@ -58,10 +58,8 @@
         } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
         const firebaseConfig = {!! json_encode($firebaseConfig) !!};
-
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        // Read CSRF token from meta tag
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         const googleProvider = new GoogleAuthProvider();
         const facebookProvider = new FacebookAuthProvider();
@@ -69,49 +67,55 @@
         // Manual login form logic
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('manualLoginForm');
-            if (!form) return;
+            if (!form) {
+                console.error('Manual login form not found');
+                return;
+            }
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                // Clear errors
                 document.getElementById('emailError').textContent = '';
                 document.getElementById('passwordError').textContent = '';
                 document.getElementById('manualLoginGlobalError').textContent = '';
+
                 const email = form.email.value;
                 const password = form.password.value;
+
                 try {
-                    // 1. Sign in with Firebase Auth
                     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                    const user = userCredential.user;
-                    const idToken = await user.getIdToken();
-                    // 2. Send ID token to backend for verification
-                    const response = await fetch('/create-session', {
+                    const idToken = await userCredential.user.getIdToken();
+
+                    console.log('Sending fetch request to /create-session', {
+                        idToken: idToken.substring(0, 10) + '...'
+                    });
+
+                    const response = await fetch('{{ route('createSession') }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json'
                         },
                         body: JSON.stringify({
                             idToken
                         })
                     });
-                    if (response.ok) {
-                        window.location.href = '/dashboard';
-                    } else {
-                        const result = await response.json();
-                        alert(result.message || 'Login failed.');
-                    }
 
                     const result = await response.json();
-                    console.log('Backend response:', result);
+                    console.log('Manual login response:', {
+                        status: response.status,
+                        result
+                    });
+
                     if (response.ok && result.redirect_url) {
+                        console.log('Redirecting to:', result.redirect_url);
                         window.location.href = result.redirect_url;
                     } else {
+                        console.error('Login failed:', result.message || 'Unknown error');
                         document.getElementById('manualLoginGlobalError').textContent = result
                             .message || 'Login failed.';
                     }
-
-
                 } catch (error) {
+                    console.error('Manual login error:', error);
                     if (error.code === 'auth/user-not-found') {
                         document.getElementById('emailError').textContent =
                             'No user found with this email.';
@@ -121,91 +125,104 @@
                         document.getElementById('emailError').textContent = 'Invalid email address.';
                     } else {
                         document.getElementById('manualLoginGlobalError').textContent =
-                            'Login failed. Please try again.';
+                            'Login failed: ' + error.message;
                     }
                 }
             });
+
+            // Google login button
+            const googleLoginButton = document.getElementById('googleLoginButton');
+            if (googleLoginButton) {
+                googleLoginButton.addEventListener('click', async () => {
+                    try {
+                        const result = await signInWithPopup(auth, googleProvider);
+                        const idToken = await result.user.getIdToken();
+
+                        console.log('Sending fetch request to /create-session (Google)', {
+                            idToken: idToken.substring(0, 10) + '...'
+                        });
+
+                        const response = await fetch('{{ route('createSession') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                idToken
+                            })
+                        });
+
+                        const resultData = await response.json();
+                        console.log('Google login response:', {
+                            status: response.status,
+                            result: resultData
+                        });
+
+                        if (response.ok && resultData.redirect_url) {
+                            console.log('Redirecting to:', resultData.redirect_url);
+                            window.location.href = resultData.redirect_url;
+                        } else {
+                            console.error('Google login failed:', resultData.message ||
+                            'Unknown error');
+                            document.getElementById('manualLoginGlobalError').textContent = resultData
+                                .message || 'Google login failed.';
+                        }
+                    } catch (error) {
+                        console.error('Google login failed:', error);
+                        document.getElementById('manualLoginGlobalError').textContent =
+                            'Google login failed: ' + error.message;
+                    }
+                });
+            }
+
+            // Facebook login button
+            const facebookLoginButton = document.getElementById('facebookLoginButton');
+            if (facebookLoginButton) {
+                facebookLoginButton.addEventListener('click', async () => {
+                    try {
+                        const result = await signInWithPopup(auth, facebookProvider);
+                        const idToken = await result.user.getIdToken();
+
+                        console.log('Sending fetch request to /create-session (Facebook)', {
+                            idToken: idToken.substring(0, 10) + '...'
+                        });
+
+                        const response = await fetch('{{ route('createSession') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                idToken
+                            })
+                        });
+
+                        const resultData = await response.json();
+                        console.log('Facebook login response:', {
+                            status: response.status,
+                            result: resultData
+                        });
+
+                        if (response.ok && resultData.redirect_url) {
+                            console.log('Redirecting to:', resultData.redirect_url);
+                            window.location.href = resultData.redirect_url;
+                        } else {
+                            console.error('Facebook login failed:', resultData.message ||
+                                'Unknown error');
+                            document.getElementById('manualLoginGlobalError').textContent = resultData
+                                .message || 'Facebook login failed.';
+                        }
+                    } catch (error) {
+                        console.error('Facebook login failed:', error);
+                        document.getElementById('manualLoginGlobalError').textContent =
+                            'Facebook login failed: ' + error.message;
+                    }
+                });
+            }
         });
-
-        window.loginWithGoogle = async function() {
-            try {
-                const result = await signInWithPopup(auth, googleProvider);
-                const user = result.user;
-                const idToken = await user.getIdToken();
-
-                const response = await fetch('/create-session', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                    },
-                    body: JSON.stringify({
-                        idToken
-                    })
-                });
-                if (response.ok) {
-                    window.location.href = '/dashboard';
-                } else {
-                    const result = await response.json();
-                    alert(result.message || 'Login failed.');
-                }
-
-
-                const resultData = await response.json();
-
-                if (response.ok) {
-                    // Success
-                    window.location.href = '/dashboard';
-                } else {
-                    // Show error message
-                    alert(resultData.message || 'Login failed.');
-                }
-
-            } catch (error) {
-                console.error('Google login failed', error);
-                alert('Google login failed. ' + error.message);
-            }
-        }
-
-
-        window.loginWithFacebook = async function() {
-            try {
-                const result = await signInWithPopup(auth, facebookProvider);
-                const user = result.user;
-                const idToken = await user.getIdToken();
-
-                const response = await fetch('/create-session', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                    },
-                    body: JSON.stringify({
-                        idToken
-                    })
-                });
-                if (response.ok) {
-                    window.location.href = '/dashboard';
-                } else {
-                    const result = await response.json();
-                    alert(result.message || 'Login failed.');
-                }
-
-
-                const resultData = await response.json();
-
-                if (response.ok) {
-                    // Success
-                    window.location.href = '/dashboard';
-                } else {
-                    // Show error message
-                    alert(resultData.message || 'Login failed.');
-                }
-
-            } catch (error) {
-                console.error('Facebook login failed', error);
-                alert('Facebook login failed');
-            }
-        }
     </script>
 @endsection
