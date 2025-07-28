@@ -179,7 +179,13 @@
                     const data = await res.json();
 
                     if (res.ok) {
-                        // Register successful – now login using Firebase
+                        // 1. Show success modal
+                        showModal("Registration Successful", "Please wait while we log you in...");
+
+                        // 2. Wait 2 seconds (optional — for better UX)
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+
+                        // 3. Proceed to Firebase login and session creation
                         await window.firebaseLoginAndSession(email, password);
                     } else {
                         showModal("Registration Error", data.message || "Registration failed.");
