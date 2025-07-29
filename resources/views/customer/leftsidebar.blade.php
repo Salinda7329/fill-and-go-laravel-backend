@@ -104,7 +104,7 @@
     .sidebar-toggle {
         position: absolute;
         top: 50%;
-        right: -15px;
+        right: -5px;
         transform: translateY(-50%);
         width: 30px;
         height: 30px;
@@ -149,7 +149,7 @@
         border: none;
         border-radius: 8px;
         cursor: pointer;
-        z-index: 1002;
+        z-index: 1001;
         box-shadow: 0 4px 12px rgba(242, 101, 34, 0.3);
         transition: all 0.3s ease;
     }
@@ -359,10 +359,14 @@
         z-index: 999;
         opacity: 0;
         transition: opacity 0.3s ease;
+        pointer-events: none;
+        /* This is the key change */
     }
 
     .sidebar-overlay.active {
         opacity: 1;
+        pointer-events: auto;
+        /* Only allow clicks when active */
     }
 
     /* Responsive Design */
@@ -370,6 +374,7 @@
         .sidebar {
             width: 280px;
             transform: translateX(-100%);
+            z-index: 1000;
         }
 
         .sidebar.mobile-visible {
@@ -384,6 +389,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 1001;
         }
 
         .sidebar-toggle {
@@ -425,6 +431,33 @@
 
         .sidebar.collapsed .logout-btn svg {
             margin-right: 8px;
+        }
+
+        .nav-dropdown {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 0 0 8px 8px;
+            margin-top: -4px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-dropdown .nav-link {
+            padding: 12px 20px 12px 60px !important;
+            margin-right: 0 !important;
+            border-radius: 0 !important;
+        }
+
+        .nav-dropdown .nav-link:hover {
+            background: rgba(242, 101, 34, 0.1) !important;
+            transform: none !important;
+        }
+
+        .nav-item.open .nav-dropdown {
+            display: block !important;
+            max-height: 500px !important;
+        }
+
+        .nav-item.open .nav-arrow {
+            transform: rotate(90deg);
         }
     }
 
@@ -518,8 +551,25 @@
             opacity: 1;
         }
     }
-</style>
 
+    /* Main content styling */
+    .main-content {
+        margin-left: 280px;
+        padding: 30px;
+        transition: margin-left 0.3s ease;
+    }
+
+    .sidebar.collapsed~.main-content {
+        margin-left: 70px;
+    }
+
+    @media (max-width: 768px) {
+        .main-content {
+            margin-left: 0;
+            padding: 20px;
+        }
+    }
+</style>
 
 <body>
     <!-- Mobile Toggle Button -->
@@ -629,6 +679,15 @@
         </form>
     </aside>
 
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Your form and other content goes here -->
+        <form>
+            <input type="text" placeholder="Test input field">
+            <button type="submit">Submit</button>
+        </form>
+    </main>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.getElementById('sidebar');
@@ -646,13 +705,10 @@
                     document.querySelectorAll('.nav-item').forEach(item => {
                         item.classList.remove('open');
                         const dropdown = item.querySelector('.nav-dropdown');
-                        if (dropdown) {
-                            dropdown.classList.remove('open');
-                        }
+                        if (dropdown) dropdown.classList.remove('open');
                     });
                 }
 
-                // Save state to localStorage
                 localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
             });
 
@@ -671,11 +727,43 @@
             });
 
             // Dropdown functionality
+            // Update the dropdown functionality section
             dropdownToggles.forEach(toggle => {
                 toggle.addEventListener('click', function(e) {
+                    // For mobile view, handle dropdowns differently
+                    if (window.innerWidth <= 768) {
+                        e.preventDefault();
+                        e.stopPropagation(); // Prevent the click from bubbling up
+
+                        const navItem = this.closest('.nav-item');
+                        const dropdown = navItem.querySelector('.nav-dropdown');
+                        const isOpen = navItem.classList.contains('open');
+
+                        // Toggle current dropdown
+                        if (isOpen) {
+                            navItem.classList.remove('open');
+                            dropdown.classList.remove('open');
+                        } else {
+                            // Close all other dropdowns first
+                            document.querySelectorAll('.nav-item').forEach(item => {
+                                if (item !== navItem) {
+                                    item.classList.remove('open');
+                                    const otherDropdown = item.querySelector(
+                                        '.nav-dropdown');
+                                    if (otherDropdown) otherDropdown.classList.remove(
+                                        'open');
+                                }
+                            });
+
+                            navItem.classList.add('open');
+                            dropdown.classList.add('open');
+                        }
+                        return;
+                    }
+
+                    // Original desktop behavior
                     e.preventDefault();
 
-                    // Don't toggle dropdowns when sidebar is collapsed on desktop
                     if (sidebar.classList.contains('collapsed') && window.innerWidth > 768) {
                         return;
                     }
@@ -689,9 +777,7 @@
                         if (item !== navItem) {
                             item.classList.remove('open');
                             const otherDropdown = item.querySelector('.nav-dropdown');
-                            if (otherDropdown) {
-                                otherDropdown.classList.remove('open');
-                            }
+                            if (otherDropdown) otherDropdown.classList.remove('open');
                         }
                     });
 
@@ -730,92 +816,20 @@
             });
 
             // Close mobile menu when clicking on nav links
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.addEventListener('click', function() {
+            // Update the nav-link click handler
+            document.querySelectorAll('.nav-link:not(.dropdown-toggle), .nav-dropdown .nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // Don't close sidebar if clicking on dropdown items
+                    if (this.closest('.nav-dropdown') && window.innerWidth <= 768) {
+                        return;
+                    }
+
                     if (window.innerWidth <= 768) {
                         sidebar.classList.remove('mobile-visible');
                         sidebarOverlay.classList.remove('active');
                         document.body.style.overflow = '';
                     }
                 });
-            });
-
-            // Smooth scrolling for better UX
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const target = document.querySelector(this.getAttribute('href'));
-                    if (target) {
-                        target.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    }
-                });
-            });
-
-            // Add loading state to logout button
-            const logoutBtn = document.querySelector('.logout-btn');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', function() {
-                    this.style.opacity = '0.7';
-                    this.style.pointerEvents = 'none';
-                    const text = this.querySelector('.nav-text');
-                    if (text) {
-                        text.textContent = 'Logging out...';
-                    }
-                });
-            }
-
-            // Add ripple effect to buttons
-            function createRipple(event) {
-                const button = event.currentTarget;
-                const circle = document.createElement('span');
-                const diameter = Math.max(button.clientWidth, button.clientHeight);
-                const radius = diameter / 2;
-
-                circle.style.width = circle.style.height = `${diameter}px`;
-                circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
-                circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
-                circle.classList.add('ripple');
-
-                const ripple = button.getElementsByClassName('ripple')[0];
-                if (ripple) {
-                    ripple.remove();
-                }
-
-                button.appendChild(circle);
-            }
-
-            // Add ripple effect styles
-            const rippleStyle = document.createElement('style');
-            rippleStyle.textContent = `
-                .nav-link, .logout-btn, .sidebar-toggle, .mobile-toggle {
-                    position: relative;
-                    overflow: hidden;
-                }
-
-                .ripple {
-                    position: absolute;
-                    border-radius: 50%;
-                    background-color: rgba(255, 255, 255, 0.6);
-                    transform: scale(0);
-                    animation: ripple-animation 0.6s linear;
-                    pointer-events: none;
-                }
-
-                @keyframes ripple-animation {
-                    to {
-                        transform: scale(4);
-                        opacity: 0;
-                    }
-                }
-            `;
-            document.head.appendChild(rippleStyle);
-
-            // Apply ripple effect to interactive elements
-            document.querySelectorAll('.nav-link, .logout-btn, .sidebar-toggle, .mobile-toggle').forEach(button => {
-                button.addEventListener('click', createRipple);
             });
         });
     </script>

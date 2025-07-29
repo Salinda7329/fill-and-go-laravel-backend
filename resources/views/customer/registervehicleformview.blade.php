@@ -1,19 +1,17 @@
-@extends('layouts.alluserdashboardlayout')
+@extends('customer.customerlayout')
 
-@section('page_title')
+@section('customer_page_title')
     Vehicle Registration Form
 @endsection
 
-@section('head_section')
+@section('customer_head_section')
     <link rel="stylesheet" href="{{ asset('css/customerregistrationform.css') }}">
 @endsection
 
-@include('customer.leftsidebar')
-
-@section('page_content')
-    <section class="registration-section">
+@section('customer_page_content')
+    <section class="registration-section" style="padding: -10px">
         <div class="container">
-            <h2 class="section-title">Register Today With Fill and Go</h2>
+            <h3 class="section-title">Register Your Vehicle With Fill and Go</h3>
 
             <!-- Modal -->
             <div id="messageModal" class="modal"
@@ -33,46 +31,64 @@
                 <form id="registrationForm" class="registration-form" method="POST">
                     @csrf
                     <div class="form-group">
-                        <label for="email">Email Address *</label>
-                        <input type="email" id="email" name="email" required>
-                        <span class="error-message" id="emailError"></span>
+                        <label for="vehicle_number">Vehicle Number *</label>
+                        <input type="text" id="vehicle_number" name="vehicle_number" required>
+                        <span class="error-message" id="vehicleNumberError"></span>
                     </div>
                     <div class="form-group">
-                        <label for="password">Password *</label>
-                        <input type="password" id="password" name="password" required minlength="8">
-                        <span class="error-message" id="passwordError"></span>
+                        <label>Fuel Type *</label>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="fuel_type" value="Petrol" required>
+                                <span class="radio-custom"></span>
+                                <span class="radio-label">Petrol</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="fuel_type" value="Diesel">
+                                <span class="radio-custom"></span>
+                                <span class="radio-label">Diesel</span>
+                            </label>
+                        </div>
+                        <span class="error-message" id="fuelTypeError"></span>
                     </div>
-                    <div class="form-group">
-                        <label for="password_confirmation">Confirm Password *</label>
-                        <input type="password" id="password_confirmation" name="password_confirmation" required
-                            minlength="8">
-                        <span class="error-message" id="passwordConfirmationError"></span>
+                    <div class="form-buttons">
+                        <button type="submit" class="btn btn-submit">Register Vehicle</button>
+                        <button type="reset" class="btn btn-reset">Reset</button>
                     </div>
-                    <button type="submit" class="btn btn-submit">Register Now</button>
                 </form>
             </div>
         </div>
     </section>
 @endsection
 
-@section('after_body_section')
+@section('customer_after_body_section')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('registrationForm');
-            const emailInput = document.getElementById('email');
-            const passwordInput = document.getElementById('password');
-            const passwordConfirmationInput = document.getElementById('password_confirmation');
-            const passwordError = document.getElementById('passwordError');
-            const passwordConfirmationError = document.getElementById('passwordConfirmationError');
+            const vehicleNumberInput = document.getElementById('vehicle_number');
+            const fuelTypeInputs = document.getElementsByName('fuel_type');
+            const vehicleNumberError = document.getElementById('vehicleNumberError');
+            const fuelTypeError = document.getElementById('fuelTypeError');
             const modal = document.getElementById('messageModal');
             const modalTitle = document.getElementById('modalTitle');
             const modalMessage = document.getElementById('modalMessage');
             const modalLoginLink = document.getElementById('modalLoginLink');
             const closeModalBtn = document.getElementById('closeModalBtn');
 
-            function validatePassword(password) {
-                const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
-                return regex.test(password);
+            function validateVehicleNumber(vehicleNumber) {
+                // Updated regex pattern:
+                // ^[A-Z]{2,3} - Starts with 2 or 3 uppercase letters
+                // \s? - Optional single space
+                // \d{3,4}$ - Ends with 3 or 4 digits
+                const regex = /^[A-Z]{2,3}\s?\d{3,4}$/;
+                return regex.test(vehicleNumber.toUpperCase().trim());
+            }
+
+            function getFuelType() {
+                for (const input of fuelTypeInputs) {
+                    if (input.checked) return input.value;
+                }
+                return null;
             }
 
             function showError(element, message) {
@@ -96,55 +112,63 @@
                 e.preventDefault();
 
                 let valid = true;
-                const email = emailInput.value.trim();
-                const password = passwordInput.value;
-                const passwordConfirmation = passwordConfirmationInput.value;
+                const vehicleNumber = vehicleNumberInput.value.trim();
+                const fuelType = getFuelType();
+                const customeremail = '{{ Auth::user()->email }}';
 
-                if (!validatePassword(password)) {
-                    showError(passwordError,
-                        'Password must be at least 8 characters and include letters, numbers, and special characters.'
+                if (!validateVehicleNumber(vehicleNumber)) {
+                    showError(vehicleNumberError,
+                        'Vehicle number must be in format AB 1234, AAA123, or AAA 1234.'
                     );
                     valid = false;
                 } else {
-                    clearError(passwordError);
+                    clearError(vehicleNumberError);
                 }
 
-                if (password !== passwordConfirmation) {
-                    showError(passwordConfirmationError, 'Passwords do not match.');
+                if (!fuelType) {
+                    showError(fuelTypeError, 'Please select a fuel type.');
                     valid = false;
                 } else {
-                    clearError(passwordConfirmationError);
+                    clearError(fuelTypeError);
                 }
 
                 if (!valid) return;
 
                 try {
                     // Send registration request to Laravel
-                    const res = await fetch('/customer/registerdata', {
+                    const res = await fetch('/customer/registervehicledata', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         },
                         body: JSON.stringify({
-                            email,
-                            password,
-                            password_confirmation: passwordConfirmation
+                            vehicle_number: vehicleNumber,
+                            fuel_type: fuelType,
+                            customeremail: customeremail
                         })
                     });
 
                     const data = await res.json();
 
                     if (res.ok) {
-                        showModal("Registration Successful",
-                            "Your account has been created. Please log in to continue.", true);
+                        showModal("Vehicle Registration Successful",
+                            "Your vehicle has been registered.", true);
                     } else {
-                        showModal("Registration Error", data.message || "Registration failed.");
+                        showModal("Registration Error",
+                            data.message ||
+                            "Vehicle registration failed. The vehicle number may already be registered."
+                        );
                     }
                 } catch (err) {
                     console.error(err);
                     showModal("Error", "An unexpected error occurred.");
                 }
+            });
+
+            form.addEventListener('reset', function() {
+                clearError(vehicleNumberError);
+                clearError(fuelTypeError);
             });
 
             closeModalBtn.addEventListener('click', function() {

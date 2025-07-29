@@ -2,12 +2,12 @@
 
 .logo-link {
     text-decoration: none; /* Removes the underline */
-    color: inherit;        /* Inherits text color from parent, preventing default blue link color */
+    color: inherit; /* Inherits text color from parent, preventing default blue link color */
     /* If you want to explicitly set a color: */
     /* color: #002060; */ /* Or whatever primary text color your logo uses */
 
-    outline: none;         /* Removes the outline that appears on focus for accessibility */
-    box-shadow: none;      /* Ensures no box-shadow appears on focus/active */
+    outline: none; /* Removes the outline that appears on focus for accessibility */
+    box-shadow: none; /* Ensures no box-shadow appears on focus/active */
 }
 
 /* Optional: Add hover/active states if you want a subtle visual cue */
@@ -23,17 +23,17 @@
     /* outline: 1px dotted #002060; */
 }
 @media (max-width: 600px) {
-  .footer-links {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  .footer-link {
-    width: 100%;
-    margin-bottom: 0;
-    text-align: left;
-  }
+    .footer-links {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .footer-link {
+        width: 100%;
+        margin-bottom: 0;
+        text-align: left;
+    }
 }
 /* Responsive Logo Styles */
 .responsive-logo {
@@ -545,3 +545,45 @@ section {
         padding: 24px;
     }
 }
+
+/* Improve touch targets */
+input,
+button,
+.radio-option {
+    min-height: 44px; /* Minimum recommended touch target size */
+}
+
+
+/* Global form protection */
+form,
+.form-group,
+.form-control,
+input,
+textarea,
+select,
+button,
+.radio-group,
+.checkbox-group {
+  position: relative;
+  z-index: 100; /* High enough to stay above most content */
+  transform: translateZ(0); /* Creates new stacking context */
+  -webkit-transform: translateZ(0); /* For Safari */
+}
+
+/* Specifically protect interactive elements */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+textarea,
+select,
+button,
+[role="button"],
+[type="submit"],
+[type="reset"],
+[type="button"] {
+  z-index: 101; /* Slightly higher than containers */
+  position: relative;
+}
+

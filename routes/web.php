@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CustomerRegistrationController;
+use App\Http\Controllers\ManageVehicleController;
 use App\Http\Controllers\UserLoginManagementController;
 use Illuminate\Support\Facades\Route;
 
@@ -49,10 +50,17 @@ Route::middleware(['verify.firebase.session'])->group(function () {
         return view('customer.customerdashboard');
     })->name('customer.dashboard')->middleware('verify.firebase.session');
 
+
+//manage vehicles-----------------------------------
+//customer manage vehicles view
+
     //register vehicle form view
     Route::get('/customer/registervehicle', function () {
         return view('customer.registervehicleformview');
     })->name('customer.registervehicle');
+    //save vehicle data
+    Route::post('/customer/registervehicledata', [ManageVehicleController::class, 'registerVehicle'])->name('customer.registervehicledata');
+//end manage vehicles-----------------------------------
 });
 
 //end customer dashboard

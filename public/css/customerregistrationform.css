@@ -1,7 +1,7 @@
 /* Registration Form Styles */
 .registration-section {
     background: linear-gradient(135deg, #f8f9fa, #ffffff);
-    padding: 80px 0;
+    padding:0;
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -116,6 +116,7 @@
     box-shadow: 0 4px 15px rgba(242, 101, 34, 0.3);
     letter-spacing: 0.5px;
     margin-top: 16px;
+    margin-bottom: 2px;
 }
 
 .btn-submit:hover {
@@ -131,6 +132,40 @@
 
 .btn-submit:disabled {
     background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-reset {
+    width: 100%;
+    background: #6c757d;
+    color: white;
+    padding: 18px 32px;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.btn-reset:hover {
+    background: #5a6268;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+}
+
+.btn-reset:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+}
+
+.btn-reset:disabled {
+    background: #adb5bd;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
@@ -184,7 +219,7 @@
 
 @media (max-width: 480px) {
     .registration-section {
-        padding: 60px 0;
+        padding:0;
     }
 
     .registration-form {
@@ -310,4 +345,81 @@
     padding: 8px;
     margin-bottom: 10px;
     border-left: 4px solid #b30000;
+}
+
+/* Base styles */
+.radio-group {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin: 1rem 0;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    position: relative;
+    padding-left: 28px;
+}
+
+/* Hide default radio */
+.radio-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* Custom radio */
+.radio-custom {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid #4a5568;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+/* Radio checked state */
+.radio-option input[type="radio"]:checked + .radio-custom {
+    border-color: #4299e1;
+    background-color: #4299e1;
+    box-shadow: inset 0 0 0 3px white;
+}
+
+/* Hover state */
+.radio-option:hover .radio-custom {
+    border-color: #4299e1;
+}
+
+/* Focus state */
+.radio-option input[type="radio"]:focus + .radio-custom {
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .radio-group {
+        gap: 15px;
+        flex-direction: column;
+    }
+
+    .radio-option {
+        padding-left: 25px;
+    }
+
+    .radio-custom {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+/* Improve touch targets */
+input, button, .radio-option {
+  min-height: 44px; /* Minimum recommended touch target size */
 }
