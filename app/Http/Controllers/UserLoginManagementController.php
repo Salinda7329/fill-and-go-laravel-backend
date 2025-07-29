@@ -25,11 +25,11 @@ class UserLoginManagementController extends Controller
         // Redirect based on role
         switch ($user->role) {
             case 1:
-                return view('admin.admindashboard');
+                return redirect()->route('admin.dashboard');
             case 2:
-                return view('stationowner.stationownerdashborad');
+                return redirect()->route('stationowner.dashboard');
             case 3:
-                return view('customer.customerdashboard');
+                return redirect()->route('customer.dashboard');
             default:
                 return redirect()->route('login')->with('error', 'Invalid user role.');
         }
