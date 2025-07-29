@@ -9,17 +9,26 @@ Route::get('/', function () {
 });
 
 //-------------------admin routes--------------------------------------------------------------------------------------------------
-//admin dashboard
-Route::get('/admin/dashboard', function () {
-    return view('admin.admindashboard');
-})->name('admin.dashboard')->middleware('verify.firebase.session');
+Route::middleware(['verify.firebase.session'])->group(function () {
+
+    //admin dashboard
+    Route::get('/admin/dashboard', function () {
+        return view('admin.admindashboard');
+    })->name('admin.dashboard');
+
+});
 //-------------------end admin routes-----------------------------------------------------------------------------------------------
 
 //--------------------stationowner routes-------------------------------------------------------------------------------------------
-//station owner dashboard
-Route::get('/stationowner/dashboard', function () {
-    return view('stationowner.stationownerdashborad');
-})->name('stationowner.dashboard')->middleware('verify.firebase.session');
+Route::middleware(['verify.firebase.session'])->group(function () {
+
+    //station owner dashboard
+    Route::get('/stationowner/dashboard', function () {
+        return view('stationowner.stationownerdashborad');
+    })->name('stationowner.dashboard');
+
+});
+
 //--------------------end stationowner routes-------------------------------------------------------------------------------------
 
 //-------------------customer routes--------------------------------------------------------------------------------------------------
@@ -33,10 +42,19 @@ Route::post('/customer/registerdata', [CustomerRegistrationController::class, 'r
 //create session for customer
 Route::post('/create-session', [CustomerRegistrationController::class, 'createSession'])->name('createSession');
 
-//customer dashboard
-Route::get('/customer/dashboard', function () {
-    return view('customer.customerdashboard');
-})->name('customer.dashboard')->middleware('verify.firebase.session');
+Route::middleware(['verify.firebase.session'])->group(function () {
+
+    //customer dashboard
+    Route::get('/customer/dashboard', function () {
+        return view('customer.customerdashboard');
+    })->name('customer.dashboard')->middleware('verify.firebase.session');
+
+    //register vehicle form view
+    Route::get('/customer/registervehicle', function () {
+        return view('customer.registervehicleformview');
+    })->name('customer.registervehicle');
+});
+
 //end customer dashboard
 //--------------------------end customer routes---------------------------------------------------------------------------------------------
 
@@ -44,6 +62,9 @@ Route::get('/customer/dashboard', function () {
 Route::get('/login', function () {
     return view('common.login');
 })->name('login');
+//logout route
+// Logout route
+Route::post('/logout', [UserLoginManagementController::class, 'logout'])->name('logout');
 
 //dashboard route to redirect after login to dashboards according to user role
 Route::get('/dashboard', [UserLoginManagementController::class, 'dashboard'])->name('dashboard')->middleware('verify.firebase.session');

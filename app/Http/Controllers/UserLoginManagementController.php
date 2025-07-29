@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
 class UserLoginManagementController extends Controller
@@ -33,5 +34,28 @@ class UserLoginManagementController extends Controller
             default:
                 return redirect()->route('login')->with('error', 'Invalid user role.');
         }
+    }
+
+    public function logout(Request $request)
+    {
+        Log::info('User logging out', [
+            'user_id' => Auth::id(),
+            'firebase_uid' => $request->firebase_uid,
+            'session_data' => session()->all(),
+        ]);
+
+        // Log out from Laravel Auth
+        Auth::logout();
+
+        // Clear all session data
+        session()->flush();
+
+        // Clear the firebase_session cookie
+        $cookie = cookie()->forget('firebase_session');
+
+        Log::info('User logged out, session and cookie cleared');
+
+        // Redirect to the home route
+        return redirect('/')->with('message', 'Successfully logged out')->withCookie($cookie);
     }
 }
