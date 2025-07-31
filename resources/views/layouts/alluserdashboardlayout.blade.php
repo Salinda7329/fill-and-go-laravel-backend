@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/png" href="{{ asset('logos/fill_and_go_logo.png') }}">
+    <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
     <title>@yield('page_title')| Fill and Go</title>
     <link rel="stylesheet" href="{{ asset('css/publichomepage.css') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js']) <!-- Loads jQuery -->

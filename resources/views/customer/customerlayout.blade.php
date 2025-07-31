@@ -8,9 +8,9 @@
     @yield('customer_head_section')
 @endsection
 
-@include('customer.leftsidebar')
 
 @section('page_content')
+    @include('customer.leftsidebar')
     @yield('customer_page_content')
 @endsection
 
