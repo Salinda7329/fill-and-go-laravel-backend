@@ -31,13 +31,15 @@
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const idToken = await userCredential.user.getIdToken();
+                const csrfToken = $('meta[name="csrf-token"]').attr('content');
+                console.log('CSRF Token:', csrfToken); // Debug CSRF token
 
                 $.ajax({
                     url: '/create-session',
                     method: 'POST',
                     contentType: 'application/json',
                     headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        'X-CSRF-TOKEN': csrfToken
                     },
                     data: JSON.stringify({
                         id_token: idToken
@@ -116,6 +118,7 @@
             const $emailInput = $('#email');
             const $passwordInput = $('#password');
             const $passwordConfirmationInput = $('#password_confirmation');
+            const $emailError = $('#emailError');
             const $passwordError = $('#passwordError');
             const $passwordConfirmationError = $('#passwordConfirmationError');
             const $modal = $('#messageModal');
@@ -152,6 +155,7 @@
                 const password = $passwordInput.val();
                 const passwordConfirmation = $passwordConfirmationInput.val();
 
+                clearError($emailError);
                 if (!validatePassword(password)) {
                     showError($passwordError,
                         'Password must be at least 8 characters and include letters, numbers, and special characters.'
@@ -170,12 +174,15 @@
 
                 if (!valid) return;
 
+                const csrfToken = $('meta[name="csrf-token"]').attr('content');
+                console.log('CSRF Token for registration:', csrfToken); // Debug CSRF token
+
                 $.ajax({
                     url: '/customer/registerdata',
                     method: 'POST',
                     contentType: 'application/json',
                     headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        'X-CSRF-TOKEN': csrfToken
                     },
                     data: JSON.stringify({
                         email: email,
@@ -187,14 +194,17 @@
                             // Attempt Firebase login after successful registration
                             window.firebaseLoginAndSession(email, password);
                         } else {
+                            showError($emailError, data.message);
                             showModal('Registration Error', data.message ||
                                 'Registration failed.');
                         }
                     },
                     error: function(xhr) {
                         console.error('Registration failed:', xhr.responseJSON);
-                        showModal('Registration Error', xhr.responseJSON?.message ||
-                            'An unexpected error occurred.');
+                        const message = xhr.responseJSON?.message ||
+                            'An unexpected error occurred.';
+                        showError($emailError, message);
+                        showModal('Registration Error', message);
                     }
                 });
             });
