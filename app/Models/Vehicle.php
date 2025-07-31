@@ -12,6 +12,7 @@ class Vehicle extends Model
     protected $primaryKey = '_id';
 
     protected $fillable = [
+        '_id',
         'vehicle_number',
         'fuel_type',
         'firebase_uid',
@@ -19,8 +20,9 @@ class Vehicle extends Model
         'user_id',
         'status',
         'created_at',
-        'updated_at',
+        'updated_at'
     ];
+
 
     public function user()
     {

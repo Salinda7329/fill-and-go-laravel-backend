@@ -6,6 +6,8 @@
 
 @section('customer_head_section')
     <link rel="stylesheet" href="{{ asset('css/customerregistrationform.css') }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 @endsection
 
 @section('customer_page_content')
@@ -51,6 +53,9 @@
                         </div>
                         <span class="error-message" id="fuelTypeError"></span>
                     </div>
+                    <input type="hidden" id="customeremail" name="customeremail" value="{{ Auth::user()->email }}">
+                    <input type="hidden" id="firebase_uid" name="firebase_uid" value="{{ Auth::user()->firebase_uid }}">
+
                     <div class="form-buttons">
                         <button type="submit" class="btn btn-submit">Register Vehicle</button>
                         <button type="reset" class="btn btn-reset">Reset</button>
@@ -63,17 +68,21 @@
 
 @section('customer_after_body_section')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('registrationForm');
-            const vehicleNumberInput = document.getElementById('vehicle_number');
-            const fuelTypeInputs = document.getElementsByName('fuel_type');
-            const vehicleNumberError = document.getElementById('vehicleNumberError');
-            const fuelTypeError = document.getElementById('fuelTypeError');
-            const modal = document.getElementById('messageModal');
-            const modalTitle = document.getElementById('modalTitle');
-            const modalMessage = document.getElementById('modalMessage');
-            const modalLoginLink = document.getElementById('modalLoginLink');
-            const closeModalBtn = document.getElementById('closeModalBtn');
+        $(document).ready(function() {
+            const $form = $('#registrationForm');
+            const $vehicleNumberInput = $('#vehicle_number');
+            const $fuelTypeInputs = $('input[name="fuel_type"]');
+            const $emailInput = $('#customeremail');
+            const $firebaseUidInput = $('#firebase_uid');
+            const $vehicleNumberError = $('#vehicleNumberError');
+            const $fuelTypeError = $('#fuelTypeError');
+            const $emailError = $('#emailError');
+            const $firebaseUidError = $('#firebaseUidError');
+            const $modal = $('#messageModal');
+            const $modalTitle = $('#modalTitle');
+            const $modalMessage = $('#modalMessage');
+            const $modalLoginLink = $('#modalLoginLink');
+            const $closeModalBtn = $('#closeModalBtn');
 
             function validateVehicleNumber(vehicleNumber) {
                 const regex = /^[A-Z]{2,3}\s?\d{3,4}$/;
@@ -81,117 +90,116 @@
             }
 
             function getFuelType() {
-                for (const input of fuelTypeInputs) {
-                    if (input.checked) return input.value;
-                }
-                return null;
+                return $fuelTypeInputs.filter(':checked').val();
             }
 
-            function showError(element, message) {
-                element.textContent = message;
-                element.classList.add('show');
+            function showError($element, message) {
+                $element.text(message).addClass('show');
             }
 
-            function clearError(element) {
-                element.textContent = '';
-                element.classList.remove('show');
+            function clearError($element) {
+                $element.text('').removeClass('show');
             }
 
             function showModal(title, message, showLogin = false) {
-                modalTitle.textContent = title;
-                modalMessage.textContent = message;
-                modalLoginLink.style.display = showLogin ? 'inline-block' : 'none';
-                modal.style.display = 'flex';
+                $modalTitle.text(title);
+                $modalMessage.text(message);
+                $modalLoginLink.css('display', showLogin ? 'inline-block' : 'none');
+                $modal.css('display', 'flex');
             }
 
-            form.addEventListener('submit', async function(e) {
+            $form.on('submit', function(e) {
                 e.preventDefault();
 
                 let valid = true;
-                const vehicleNumber = vehicleNumberInput.value.trim();
+                const vehicleNumber = $vehicleNumberInput.val().trim();
                 const fuelType = getFuelType();
-                const customeremail = @json(auth()->user()->email ?? '');
-                const firebaseUid = @json(auth()->user()->firebase_uid ?? '');
+                const customeremail = $emailInput.val().trim();
+                const firebaseUid = $firebaseUidInput.val().trim();
+
+                clearError($vehicleNumberError);
+                clearError($fuelTypeError);
+                clearError($emailError);
+                clearError($firebaseUidError);
 
                 if (!customeremail || !firebaseUid) {
-                    showModal("Authentication Error", "Please log in to register a vehicle.", true);
+                    showModal('Authentication Error', 'Please log in to register a vehicle.', true);
                     return;
                 }
 
                 if (!validateVehicleNumber(vehicleNumber)) {
-                    showError(vehicleNumberError,
-                        'Vehicle number must be in format AB 1234, AAA123, or AAA 1234.'
-                    );
+                    showError($vehicleNumberError,
+                        'Vehicle number must be in format AB 1234, AAA123, or AAA 1234.');
                     valid = false;
-                } else {
-                    clearError(vehicleNumberError);
                 }
 
                 if (!fuelType) {
-                    showError(fuelTypeError, 'Please select a fuel type.');
+                    showError($fuelTypeError, 'Please select a fuel type.');
                     valid = false;
-                } else {
-                    clearError(fuelTypeError);
                 }
 
                 if (!valid) return;
 
-                try {
-                    const res = await fetch('/customer/registervehicledata', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            vehicle_number: vehicleNumber,
-                            fuel_type: fuelType,
-                            customeremail: customeremail,
-                            firebase_uid: firebaseUid
-                        })
-                    });
+                const csrfToken = $('meta[name="csrf-token"]').attr('content');
+                console.log('CSRF Token for vehicle registration:', csrfToken); // Debug CSRF token
 
-                    // Debug: Log raw response
-                    const rawResponse = await res.text();
-                    console.log('Raw response:', rawResponse);
+                $.ajax({
+                    url: '/customer/registervehicledata',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    data: JSON.stringify({
+                        vehicle_number: vehicleNumber,
+                        fuel_type: fuelType,
+                        customeremail: customeremail,
+                        firebase_uid: firebaseUid
+                    }),
+                    success: function(data) {
+                        if (data.success) {
+                            const vehicleId = data.vehicle && data.vehicle._id ? data.vehicle
+                                ._id : 'N/A';
 
-                    let data;
-                    try {
-                        data = JSON.parse(rawResponse);
-                    } catch (jsonError) {
-                        console.error('JSON parse error:', jsonError);
-                        showModal("Error", "Invalid response from server. Please try again.");
-                        return;
+                            showModal(
+                                'Vehicle Registration Success',
+                                'Vehicle registered successfully. Vehicle ID: ' + vehicleId
+                            );
+
+                            // Delay redirect so user sees the success message
+                            setTimeout(() => {
+                                window.location.href = '/customer/dashboard';
+                            }, 2000);
+                        } else {
+                            showError($vehicleNumberError, data.message);
+                            showModal('Vehicle Registration Error', data.message ||
+                                'Vehicle registration failed.');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Vehicle registration failed:', xhr.responseJSON);
+                        const message = xhr.responseJSON?.message ||
+                            'An unexpected error occurred.';
+                        showError($vehicleNumberError, message);
+                        showModal('Vehicle Registration Error', message);
                     }
-
-                    if (res.ok) {
-                        showModal("Vehicle Registration Successful",
-                            "Your vehicle has been registered. Account ID: " + (data.account_id ||
-                                'N/A'), true);
-                    } else {
-                        showModal("Registration Error",
-                            data.message ||
-                            "Vehicle registration failed. The vehicle number may already be registered."
-                        );
-                    }
-                } catch (err) {
-                    console.error('Fetch error:', err);
-                    showModal("Error", "An unexpected error occurred.");
-                }
+                });
             });
 
-            form.addEventListener('reset', function() {
-                clearError(vehicleNumberError);
-                clearError(fuelTypeError);
+            $form.on('reset', function() {
+                clearError($vehicleNumberError);
+                clearError($fuelTypeError);
+                clearError($emailError);
+                clearError($firebaseUidError);
             });
 
-            closeModalBtn.addEventListener('click', function() {
-                modal.style.display = 'none';
+            $closeModalBtn.on('click', function() {
+                $modal.css('display', 'none');
             });
 
-            modal.addEventListener('click', function(e) {
-                if (e.target === modal) {
-                    modal.style.display = 'none';
+            $modal.on('click', function(e) {
+                if (e.target === $modal[0]) {
+                    $modal.css('display', 'none');
                 }
             });
         });
