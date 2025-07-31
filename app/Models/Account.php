@@ -2,22 +2,17 @@
 
 namespace App\Models;
 
-
 use MongoDB\Laravel\Eloquent\Model;
 
-class Vehicle extends Model
+class Account extends Model
 {
     protected $connection = 'mongodb';
-    protected $collection = 'vehicles';
+    protected $collection = 'accounts';
     protected $primaryKey = '_id';
 
     protected $fillable = [
-        'vehicle_number',
-        'fuel_type',
-        'firebase_uid',
-        'customeremail',
         'user_id',
-        'status',
+        'balance',
         'created_at',
         'updated_at',
     ];
@@ -25,5 +20,10 @@ class Vehicle extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', '_id');
+    }
+
+    public function getAccountNumberAttribute()
+    {
+        return $this->_id;
     }
 }

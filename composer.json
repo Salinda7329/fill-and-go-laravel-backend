@@ -10,6 +10,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "jenssegers/mongodb": "*",
         "kreait/firebase-php": "^7.21",
         "kreait/laravel-firebase": "^6.1",
         "laravel/framework": "^12.0",

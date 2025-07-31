@@ -2,59 +2,105 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Account;
 use App\Models\Vehicle;
-use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use MongoDB\BSON\ObjectId;
 
 class ManageVehicleController extends Controller
 {
+    public function showRegisterVehicleForm(Request $request)
+    {
+        if (!Auth::check()) {
+            return redirect('/login')->with('error', 'Please log in to register a vehicle.');
+        }
+        return view('vehicle_registration');
+    }
+
     public function registerVehicle(Request $request)
     {
-        // Validate the request
-        $validated = $request->validate([
-            'vehicle_number' => 'required|string',
-            'fuel_type' => 'required|in:Petrol,Diesel',
-            'customeremail' => 'required|email',
-            'firebase_uid' => 'required|string',
-        ]);
+        try {
+            // Validate the request
+            $validated = $request->validate([
+                'vehicle_number' => 'required|string',
+                'fuel_type' => 'required|in:Petrol,Diesel',
+                'customeremail' => 'required|email',
+                'firebase_uid' => 'required|string',
+            ]);
 
-        // Normalize vehicle number (remove spaces and convert to uppercase)
-        $vehicleNumber = strtoupper(str_replace(' ', '', $validated['vehicle_number']));
+            $user = Auth::user();
+            if (!$user || $user->firebase_uid !== $validated['firebase_uid']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized. Invalid user session.'
+                ], 401);
+            }
 
-        // Check if vehicle already exists
-        $existingVehicle = Vehicle::where('vehicle_number', $vehicleNumber)->first();
+            // Normalize vehicle number
+            $vehicleNumber = strtoupper(str_replace(' ', '', $validated['vehicle_number']));
 
-        if ($existingVehicle) {
+            // Check if vehicle exists
+            if (Vehicle::where('vehicle_number', $vehicleNumber)->exists()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vehicle number already registered.'
+                ], 422);
+            }
+
+            // Create account for the customer
+            $account = Account::firstOrCreate(
+                ['user_id' => $user->_id],
+                [
+                    '_id' => new ObjectId(),
+                    'user_id' => $user->_id,
+                    'balance' => 0.00,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+            Log::info('Account created or retrieved for user', [
+                'user_id' => $user->_id,
+                'account_id' => $account->_id,
+            ]);
+
+            // Create vehicle
+            $vehicle = Vehicle::create([
+                '_id' => new ObjectId(),
+                'vehicle_number' => $vehicleNumber,
+                'fuel_type' => $validated['fuel_type'],
+                'firebase_uid' => $validated['firebase_uid'],
+                'customeremail' => $validated['customeremail'],
+                'user_id' => $user->_id,
+                'status' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            Log::info('Vehicle registered successfully', [
+                'vehicle_id' => $vehicle->_id,
+                'vehicle_number' => $vehicleNumber,
+                'user_id' => $user->_id,
+            ]);
+
             return response()->json([
-                'message' => 'Vehicle number already registered.'
-            ], 422);
-        }
-
-        // Find the user by firebase_uid to get their MongoDB _id
-        $user = User::where('firebase_uid', $validated['firebase_uid'])->first();
-
-        if (!$user) {
+                'success' => true,
+                'message' => 'Vehicle registered successfully.',
+                'vehicle' => $vehicle,
+                'account_id' => $account->_id,
+            ], 201);
+        } catch (\Exception $e) {
+            Log::error('Vehicle registration error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all(),
+            ]);
             return response()->json([
-                'message' => 'User not found.'
-            ], 404);
+                'success' => false,
+                'message' => 'Server error: ' . $e->getMessage(),
+            ], 500);
         }
-
-        // Create new vehicle record
-        $vehicle = new Vehicle();
-        $vehicle->vehicle_number = $vehicleNumber;
-        $vehicle->fuel_type = $validated['fuel_type'];
-        $vehicle->firebase_uid = $validated['firebase_uid'];
-        $vehicle->customeremail = $validated['customeremail'];
-        $vehicle->user_id = $user->_id; // Store the user's MongoDB _id
-        $vehicle->status = 1;
-        $vehicle->created_at = now();
-        $vehicle->updated_at = now();
-        $vehicle->save();
-
-        return response()->json([
-            'message' => 'Vehicle registered successfully.',
-            'vehicle' => $vehicle
-        ], 201);
     }
 }

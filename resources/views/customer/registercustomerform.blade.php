@@ -6,6 +6,8 @@
 
 @section('head_section')
     <link rel="stylesheet" href="{{ asset('css/customerregistrationform.css') }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script type="module">
         import {
             initializeApp
@@ -24,32 +26,41 @@
 
         const firebaseApp = initializeApp(firebaseConfig);
         const auth = getAuth(firebaseApp);
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
         window.firebaseLoginAndSession = async function(email, password) {
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const idToken = await userCredential.user.getIdToken();
 
-                await fetch('/create-session', {
+                $.ajax({
+                    url: '/create-session',
                     method: 'POST',
+                    contentType: 'application/json',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     },
-                    body: JSON.stringify({
-                        idToken
-                    })
+                    data: JSON.stringify({
+                        id_token: idToken
+                    }),
+                    success: function(response) {
+                        if (response.success) {
+                            window.location.href = '/dashboard';
+                        } else {
+                            showModal('Login Error', response.message || 'Login failed.');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Firebase login failed:', xhr.responseJSON);
+                        showModal('Login Error', xhr.responseJSON?.message ||
+                            'Login failed. Please try again.');
+                    }
                 });
-
-                // Redirect after session creation
-                window.location.href = '/dashboard';
             } catch (error) {
-                console.error("Firebase login failed:", error);
-                showModal("Login Error",
-                    "Registration succeeded but automatic login failed. Please try logging in manually.");
+                console.error('Firebase login failed:', error);
+                showModal('Login Error',
+                    'Registration succeeded but automatic login failed. Please try logging in manually.');
             }
-        }
+        };
     </script>
 @endsection
 
@@ -73,7 +84,7 @@
             </div>
 
             <div class="new customer registration form">
-                <form id="registrationForm" class="registration-form" method="POST">
+                <form id="registrationForm" class="registration-form" method="POST" action="/customer/registerdata">
                     @csrf
                     <div class="form-group">
                         <label for="email">Email Address *</label>
@@ -100,103 +111,101 @@
 
 @section('after_body_section')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('registrationForm');
-            const emailInput = document.getElementById('email');
-            const passwordInput = document.getElementById('password');
-            const passwordConfirmationInput = document.getElementById('password_confirmation');
-            const passwordError = document.getElementById('passwordError');
-            const passwordConfirmationError = document.getElementById('passwordConfirmationError');
-            const modal = document.getElementById('messageModal');
-            const modalTitle = document.getElementById('modalTitle');
-            const modalMessage = document.getElementById('modalMessage');
-            const modalLoginLink = document.getElementById('modalLoginLink');
-            const closeModalBtn = document.getElementById('closeModalBtn');
+        $(document).ready(function() {
+            const $form = $('#registrationForm');
+            const $emailInput = $('#email');
+            const $passwordInput = $('#password');
+            const $passwordConfirmationInput = $('#password_confirmation');
+            const $passwordError = $('#passwordError');
+            const $passwordConfirmationError = $('#passwordConfirmationError');
+            const $modal = $('#messageModal');
+            const $modalTitle = $('#modalTitle');
+            const $modalMessage = $('#modalMessage');
+            const $modalLoginLink = $('#modalLoginLink');
+            const $closeModalBtn = $('#closeModalBtn');
 
             function validatePassword(password) {
                 const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
                 return regex.test(password);
             }
 
-            function showError(element, message) {
-                element.textContent = message;
-                element.classList.add('show');
+            function showError($element, message) {
+                $element.text(message).addClass('show');
             }
 
-            function clearError(element) {
-                element.textContent = '';
-                element.classList.remove('show');
+            function clearError($element) {
+                $element.text('').removeClass('show');
             }
 
             function showModal(title, message, showLogin = false) {
-                modalTitle.textContent = title;
-                modalMessage.textContent = message;
-                modalLoginLink.style.display = showLogin ? 'inline-block' : 'none';
-                modal.style.display = 'flex';
+                $modalTitle.text(title);
+                $modalMessage.text(message);
+                $modalLoginLink.css('display', showLogin ? 'inline-block' : 'none');
+                $modal.css('display', 'flex');
             }
 
-            form.addEventListener('submit', async function(e) {
+            $form.on('submit', function(e) {
                 e.preventDefault();
 
                 let valid = true;
-                const email = emailInput.value.trim();
-                const password = passwordInput.value;
-                const passwordConfirmation = passwordConfirmationInput.value;
+                const email = $emailInput.val().trim();
+                const password = $passwordInput.val();
+                const passwordConfirmation = $passwordConfirmationInput.val();
 
                 if (!validatePassword(password)) {
-                    showError(passwordError,
+                    showError($passwordError,
                         'Password must be at least 8 characters and include letters, numbers, and special characters.'
                     );
                     valid = false;
                 } else {
-                    clearError(passwordError);
+                    clearError($passwordError);
                 }
 
                 if (password !== passwordConfirmation) {
-                    showError(passwordConfirmationError, 'Passwords do not match.');
+                    showError($passwordConfirmationError, 'Passwords do not match.');
                     valid = false;
                 } else {
-                    clearError(passwordConfirmationError);
+                    clearError($passwordConfirmationError);
                 }
 
                 if (!valid) return;
 
-                try {
-                    // Send registration request to Laravel
-                    const res = await fetch('/customer/registerdata', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            email,
-                            password,
-                            password_confirmation: passwordConfirmation
-                        })
-                    });
-
-                    const data = await res.json();
-
-                    if (res.ok) {
-                        showModal("Registration Successful",
-                            "Your account has been created. Please log in to continue.", true);
-                    } else {
-                        showModal("Registration Error", data.message || "Registration failed.");
+                $.ajax({
+                    url: '/customer/registerdata',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    data: JSON.stringify({
+                        email: email,
+                        password: password,
+                        password_confirmation: passwordConfirmation
+                    }),
+                    success: function(data) {
+                        if (data.success) {
+                            // Attempt Firebase login after successful registration
+                            window.firebaseLoginAndSession(email, password);
+                        } else {
+                            showModal('Registration Error', data.message ||
+                                'Registration failed.');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Registration failed:', xhr.responseJSON);
+                        showModal('Registration Error', xhr.responseJSON?.message ||
+                            'An unexpected error occurred.');
                     }
-                } catch (err) {
-                    console.error(err);
-                    showModal("Error", "An unexpected error occurred.");
-                }
+                });
             });
 
-            closeModalBtn.addEventListener('click', function() {
-                modal.style.display = 'none';
+            $closeModalBtn.on('click', function() {
+                $modal.css('display', 'none');
             });
 
-            modal.addEventListener('click', function(e) {
-                if (e.target === modal) {
-                    modal.style.display = 'none';
+            $modal.on('click', function(e) {
+                if (e.target === $modal[0]) {
+                    $modal.css('display', 'none');
                 }
             });
         });

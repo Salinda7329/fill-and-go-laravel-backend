@@ -2,26 +2,25 @@
 
 namespace App\Models;
 
-use MongoDB\Laravel\Eloquent\Model;
-use Illuminate\Auth\Authenticatable;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use MongoDB\Laravel\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-
-class User extends Model implements AuthenticatableContract
+class User extends Authenticatable
 {
-     use Authenticatable;
+    use Notifiable;
 
     protected $connection = 'mongodb';
     protected $collection = 'users';
+    protected $primaryKey = '_id';
 
     protected $fillable = [
-        'first_name',
-        'last_name',
         'email',
-        'phone',
-        'nic',
+        'password',
         'role',
         'status',
+        'firebase_uid',
+        'created_at',
+        'updated_at',
     ];
 
     protected $hidden = [

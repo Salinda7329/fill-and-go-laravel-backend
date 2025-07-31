@@ -76,10 +76,6 @@
             const closeModalBtn = document.getElementById('closeModalBtn');
 
             function validateVehicleNumber(vehicleNumber) {
-                // Updated regex pattern:
-                // ^[A-Z]{2,3} - Starts with 2 or 3 uppercase letters
-                // \s? - Optional single space
-                // \d{3,4}$ - Ends with 3 or 4 digits
                 const regex = /^[A-Z]{2,3}\s?\d{3,4}$/;
                 return regex.test(vehicleNumber.toUpperCase().trim());
             }
@@ -114,7 +110,13 @@
                 let valid = true;
                 const vehicleNumber = vehicleNumberInput.value.trim();
                 const fuelType = getFuelType();
-                const customeremail = '{{ Auth::user()->email }}';
+                const customeremail = @json(auth()->user()->email ?? '');
+                const firebaseUid = @json(auth()->user()->firebase_uid ?? '');
+
+                if (!customeremail || !firebaseUid) {
+                    showModal("Authentication Error", "Please log in to register a vehicle.", true);
+                    return;
+                }
 
                 if (!validateVehicleNumber(vehicleNumber)) {
                     showError(vehicleNumberError,
@@ -135,7 +137,6 @@
                 if (!valid) return;
 
                 try {
-                    // Send registration request to Laravel
                     const res = await fetch('/customer/registervehicledata', {
                         method: 'POST',
                         headers: {
@@ -145,15 +146,28 @@
                         body: JSON.stringify({
                             vehicle_number: vehicleNumber,
                             fuel_type: fuelType,
-                            customeremail: customeremail
+                            customeremail: customeremail,
+                            firebase_uid: firebaseUid
                         })
                     });
 
-                    const data = await res.json();
+                    // Debug: Log raw response
+                    const rawResponse = await res.text();
+                    console.log('Raw response:', rawResponse);
+
+                    let data;
+                    try {
+                        data = JSON.parse(rawResponse);
+                    } catch (jsonError) {
+                        console.error('JSON parse error:', jsonError);
+                        showModal("Error", "Invalid response from server. Please try again.");
+                        return;
+                    }
 
                     if (res.ok) {
                         showModal("Vehicle Registration Successful",
-                            "Your vehicle has been registered.", true);
+                            "Your vehicle has been registered. Account ID: " + (data.account_id ||
+                                'N/A'), true);
                     } else {
                         showModal("Registration Error",
                             data.message ||
@@ -161,7 +175,7 @@
                         );
                     }
                 } catch (err) {
-                    console.error(err);
+                    console.error('Fetch error:', err);
                     showModal("Error", "An unexpected error occurred.");
                 }
             });

@@ -8,6 +8,7 @@
     <link rel="icon" type="image/png" href="{{ asset('logos/fill_and_go_logo.png') }}">
     <title>@yield('page_title')| Fill and Go</title>
     <link rel="stylesheet" href="{{ asset('css/publichomepage.css') }}">
+    @vite(['resources/css/app.css', 'resources/js/app.js']) <!-- Loads jQuery -->
     @yield('head_section')
 </head>
 
