@@ -1,9 +1,10 @@
 <?php
 
-use App\Http\Controllers\CustomerRegistrationController;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminTopupController;
 use App\Http\Controllers\ManageVehicleController;
 use App\Http\Controllers\UserLoginManagementController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CustomerRegistrationController;
 
 Route::get('/', function () {
     return view('publichomepage');
@@ -27,6 +28,11 @@ Route::middleware(['verify.firebase.session', 'auth'])->group(function () {
     Route::get('/stationowner/dashboard', function () {
         return view('stationowner.stationownerdashborad');
     })->name('stationowner.dashboard');
+
+    //manage topups
+    Route::get('/admin/topups', [AdminTopupController::class, 'index'])->name('admin.topups');
+    Route::post('/admin/topups/{id}/approve', [AdminTopupController::class, 'approve'])->name('admin.topups.approve');
+    Route::post('/admin/topups/{id}/reject', [AdminTopupController::class, 'reject'])->name('admin.topups.reject');
 });
 
 //--------------------end stationowner routes-------------------------------------------------------------------------------------
@@ -63,7 +69,6 @@ Route::middleware(['verify.firebase.session', 'auth'])->group(function () {
     //payment proof upload
     Route::get('/customer/payment-proof', [App\Http\Controllers\PaymentProofController::class, 'showForm']);
     Route::post('/customer/upload-payment-proof', [App\Http\Controllers\PaymentProofController::class, 'store']);
-
 });
 
 //end customer dashboard

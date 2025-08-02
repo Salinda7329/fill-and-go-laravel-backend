@@ -49,15 +49,17 @@ class UserLoginManagementController extends Controller
         // Log out from Laravel Auth
         Auth::logout();
 
-        // Clear all session data
-        session()->flush();
+        // Invalidate the current session (removes from session storage)
+        $request->session()->invalidate();
 
-        // Clear the firebase_session cookie
+        // Regenerate CSRF token for security
+        $request->session()->regenerateToken();
+
+        // Forget the firebase_session cookie
         $cookie = cookie()->forget('firebase_session');
 
-        Log::info('User logged out, session and cookie cleared');
+        Log::info('User logged out. Session invalidated and cookie cleared.');
 
-        // Redirect to the home route
         return redirect('/')->with('message', 'Successfully logged out')->withCookie($cookie);
     }
 }

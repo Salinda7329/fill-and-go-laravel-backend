@@ -9,6 +9,8 @@
     <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
     <title>@yield('page_title')| Fill and Go</title>
     <link rel="stylesheet" href="{{ asset('css/publichomepage.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/jquery.dataTables.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/glightbox.min.css') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js']) <!-- Loads jQuery -->
     @yield('head_section')
 </head>
@@ -78,6 +80,8 @@
 </body>
 
 <script src="{{ asset('js/publichomepage.js') }}"></script>
+<script src="{{ asset('js/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('js/glightbox.min.js') }}"></script>
 @yield('after_body_section')
 
 </html>
