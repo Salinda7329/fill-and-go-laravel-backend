@@ -71,6 +71,10 @@ Route::middleware(['verify.firebase.session', 'auth'])->group(function () {
     //payment proof upload
     Route::get('/customer/payment-proof', [App\Http\Controllers\PaymentProofController::class, 'showForm']);
     Route::post('/customer/upload-payment-proof', [App\Http\Controllers\PaymentProofController::class, 'store']);
+    //topup history
+    Route::get('/customer/topup-history', [\App\Http\Controllers\TopupController::class, 'customerTopupHistory'])
+    ->name('customer.topup.history');
+
 });
 
 //end customer dashboard

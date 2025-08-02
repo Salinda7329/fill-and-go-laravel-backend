@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Vehicle;
+use App\Models\Topup;
 use App\Models\Account;
+use App\Models\Vehicle;
 use Illuminate\Http\Request;
-use MongoDB\Laravel\Eloquent\Casts\ObjectId;
 use Illuminate\Support\Facades\Auth;
+use MongoDB\Laravel\Eloquent\Casts\ObjectId;
 
 class TopupController extends Controller
 {
@@ -77,7 +78,7 @@ class TopupController extends Controller
 
     public function showTopupHistory(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         if (!$user) {
             abort(403, 'Unauthorized');
         }
@@ -101,7 +102,7 @@ class TopupController extends Controller
 
     public function updateTopupStatus(Request $request, $topupId)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         if (!$user || $user->role != 1) {
             abort(403, 'Unauthorized');
         }
@@ -133,5 +134,14 @@ class TopupController extends Controller
             'message' => 'Top-up status updated successfully.',
             'topup' => $topup
         ], 200);
+    }
+
+    public function customerTopupHistory()
+    {
+        $user = Auth::user();
+        if (!$user) abort(403, 'Unauthorized');
+
+        $topups = \App\Models\Topup::where('user_id', $user->_id)->orderBy('created_at', 'desc')->get();
+        return view('customer.managetopups', compact('topups'));
     }
 }
