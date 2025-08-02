@@ -64,59 +64,63 @@
             <div style="color: red;">{{ session('error') }}</div>
         @endif
 
-        <div class="table-responsive">
-            <table id="topupTable" class="display table" style="width:100%;">
-                <thead>
-                    <tr>
-                        <th>Customer</th>
-                        <th>Amount (Detected)</th>
-                        <th>Proof</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($topups as $topup)
+        @if (($topups ?? collect([]))->count())
+            <div class="table-responsive">
+                <table id="topupTable" class="display table" style="width:100%;">
+                    <thead>
                         <tr>
-                            <td>{{ $topup->user->email ?? 'N/A' }}</td>
-                            <td>
-                                <a href="#" class="edit-amount" data-id="{{ $topup->_id }}"
-                                    data-amount="{{ $topup->detected_amount ?? $topup->amount }}"
-                                    data-proof="{{ url('storage/' . $topup->proof_image) }}">
-                                    {{ $topup->detected_amount ?? $topup->amount }}
-                                </a>
-                            </td>
-                            <td>
-                                @if ($topup->proof_image)
-                                    <a href="{{ url('storage/' . $topup->proof_image) }}" class="glightbox"
-                                        data-glightbox="title: Payment Proof" data-type="image">
-                                        <img src="{{ url('storage/' . $topup->proof_image) }}" width="80"
-                                            style="border-radius:6px;border:1px solid #eee;">
+                            <th>Customer</th>
+                            <th>Amount (Detected)</th>
+                            <th>Proof</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($topups as $topup)
+                            <tr>
+                                <td>{{ $topup->user->email ?? 'N/A' }}</td>
+                                <td>
+                                    <a href="#" class="edit-amount" data-id="{{ $topup->_id }}"
+                                        data-amount="{{ $topup->detected_amount ?? $topup->amount }}"
+                                        data-proof="{{ url('storage/' . $topup->proof_image) }}">
+                                        {{ $topup->detected_amount ?? $topup->amount }}
                                     </a>
-                                @else
-                                    No proof uploaded
-                                @endif
-                            </td>
-                            <td>
-                                <form action="{{ route('admin.topups.approve', $topup->_id) }}" method="POST"
-                                    class="action-form" data-action="approve" style="display:inline;">
-                                    @csrf
-                                    <button type="submit" class="btn-action btn-approve">Approve</button>
-                                </form>
-                                <form action="{{ route('admin.topups.reject', $topup->_id) }}" method="POST"
-                                    class="action-form" data-action="reject" style="display:inline;">
-                                    @csrf
-                                    <button type="submit" class="btn-action btn-reject">Reject</button>
-                                </form>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4">No pending topups</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+                                </td>
+                                <td>
+                                    @if ($topup->proof_image)
+                                        <a href="{{ url('storage/' . $topup->proof_image) }}" class="glightbox"
+                                            data-glightbox="title: Payment Proof" data-type="image">
+                                            <img src="{{ url('storage/' . $topup->proof_image) }}" width="80"
+                                                style="border-radius:6px;border:1px solid #eee;">
+                                        </a>
+                                    @else
+                                        No proof uploaded
+                                    @endif
+                                </td>
+                                <td>
+                                    <form action="{{ route('admin.topups.approve', $topup->_id) }}" method="POST"
+                                        class="action-form" data-action="approve" style="display:inline;">
+                                        @csrf
+                                        <button type="submit" class="btn-action btn-approve">Approve</button>
+                                    </form>
+                                    <form action="{{ route('admin.topups.reject', $topup->_id) }}" method="POST"
+                                        class="action-form" data-action="reject" style="display:inline;">
+                                        @csrf
+                                        <button type="submit" class="btn-action btn-reject">Reject</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <div class="no-topups-message" style="padding:40px 0; text-align:center; color:#555;">
+                <div style="font-size:20px; font-weight:600; color:#888;">No pending topups.</div>
+                <div style="margin-top:8px;">There are no pending topup requests at the moment.</div>
+            </div>
+        @endif
+
     </div>
 @endsection
 

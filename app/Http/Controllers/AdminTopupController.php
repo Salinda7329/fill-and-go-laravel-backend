@@ -48,14 +48,13 @@ class AdminTopupController extends Controller
         $request->validate([
             'detected_amount' => 'required|numeric|min:0.01',
         ]);
+
         $topup = Topup::findOrFail($id);
-        $topup->detected_amount = $request->input('detected_amount');
+        $topup->detected_amount = $request->detected_amount;
+        // Update the main amount as well, so approval will use this
+        $topup->amount = $request->detected_amount;
         $topup->save();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Amount updated successfully!',
-            'amount' => $topup->detected_amount
-        ]);
+        return response()->json(['success' => true]);
     }
 }

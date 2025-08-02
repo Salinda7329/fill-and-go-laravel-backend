@@ -45,63 +45,74 @@
 @section('customer_page_content')
     <div class="container" style="padding:20px;flex-grow:1">
         <h2>My Topup Requests</h2>
-        <div class="table-responsive">
-            <table id="customerTopupTable" class="display table" style="width:100%;">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Reference</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Proof</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($topups as $t)
+        @if (($topups ?? collect([]))->count())
+            <div class="table-responsive">
+                <table id="customerTopupTable" class="display table" style="width:100%;">
+                    <thead>
                         <tr>
-                            <td>{{ \Carbon\Carbon::parse($t->created_at)->format('Y-m-d H:i') }}</td>
-                            <td>{{ $t->reference_number ?? '-' }}</td>
-                            <td>{{ number_format($t->amount, 2) }}</td>
-                            <td>
-                                <span class="status-badge status-{{ $t->status }}">
-                                    {{ ucfirst($t->status) }}
-                                </span>
-                            </td>
-                            <td>
-                                @if ($t->proof_image)
-                                    <a href="{{ url('storage/' . $t->proof_image) }}" class="glightbox"
-                                        data-glightbox="title: Payment Proof">
-                                        <img src="{{ url('storage/' . $t->proof_image) }}" width="50"
-                                            class="proof-thumb">
-                                    </a>
-                                @else
-                                    -
-                                @endif
-                            </td>
+                            <th>Date</th>
+                            <th>Reference</th>
+                            <th>Amount</th>
+                            <th>Detected</th>
+                            <th>Status</th>
+                            <th>Proof</th>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6">No topups found.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody>
+                        @foreach ($topups as $t)
+                            <tr>
+                                <td>{{ \Carbon\Carbon::parse($t->created_at)->format('Y-m-d H:i') }}</td>
+                                <td>{{ $t->reference_number ?? '-' }}</td>
+                                <td>{{ number_format($t->amount, 2) }}</td>
+                                <td>{{ $t->detected_amount ?? '-' }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ $t->status }}">
+                                        {{ ucfirst($t->status) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    @if ($t->proof_image)
+                                        <a href="{{ url('storage/' . $t->proof_image) }}" class="glightbox"
+                                            data-glightbox="title: Payment Proof">
+                                            <img src="{{ url('storage/' . $t->proof_image) }}" width="50"
+                                                class="proof-thumb">
+                                        </a>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <div class="no-topups-message" style="padding:40px 0; text-align:center; color:#555;">
+                <svg width="80" height="80" fill="none" viewBox="0 0 24 24"
+                    style="margin-bottom:16px;opacity:0.4;">
+                </svg>
+                <div style="font-size:20px; font-weight:600; color:#888;">No topup requests found.</div>
+                <div style="margin-top:8px;">You haven’t made any topup requests yet.</div>
+            </div>
+        @endif
     </div>
+
 @endsection
 
 @section('customer_after_body_section')
     <script>
         $(document).ready(function() {
-            $('#customerTopupTable').DataTable({
-                order: [
-                    [0, 'desc']
-                ],
-                responsive: true
-            });
-            GLightbox({
-                selector: '.glightbox'
-            });
+            if ($('#customerTopupTable').length) {
+                $('#customerTopupTable').DataTable({
+                    order: [
+                        [0, 'desc']
+                    ],
+                    responsive: true
+                });
+                GLightbox({
+                    selector: '.glightbox'
+                });
+            }
         });
     </script>
 @endsection
