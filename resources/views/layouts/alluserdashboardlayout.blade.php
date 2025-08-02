@@ -82,6 +82,8 @@
 <script src="{{ asset('js/publichomepage.js') }}"></script>
 <script src="{{ asset('js/jquery.dataTables.min.js') }}"></script>
 <script src="{{ asset('js/glightbox.min.js') }}"></script>
+<script src="{{ asset('js/glightbox.min.js') }}"></script>
+<script src="{{ asset('js/sweetalert2.all.min.js') }}"></script>
 @yield('after_body_section')
 
 </html>

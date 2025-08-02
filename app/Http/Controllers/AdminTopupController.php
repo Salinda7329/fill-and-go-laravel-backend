@@ -42,4 +42,20 @@ class AdminTopupController extends Controller
 
         return redirect()->back()->with('error', 'Topup rejected.');
     }
+
+    public function updateAmount(Request $request, $id)
+    {
+        $request->validate([
+            'detected_amount' => 'required|numeric|min:0.01',
+        ]);
+        $topup = Topup::findOrFail($id);
+        $topup->detected_amount = $request->input('detected_amount');
+        $topup->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Amount updated successfully!',
+            'amount' => $topup->detected_amount
+        ]);
+    }
 }

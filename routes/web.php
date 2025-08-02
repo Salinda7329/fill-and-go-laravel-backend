@@ -33,6 +33,8 @@ Route::middleware(['verify.firebase.session', 'auth'])->group(function () {
     Route::get('/admin/topups', [AdminTopupController::class, 'index'])->name('admin.topups');
     Route::post('/admin/topups/{id}/approve', [AdminTopupController::class, 'approve'])->name('admin.topups.approve');
     Route::post('/admin/topups/{id}/reject', [AdminTopupController::class, 'reject'])->name('admin.topups.reject');
+    //edit amount of topup
+    Route::post('/admin/topups/{id}/update-amount', [AdminTopupController::class, 'updateAmount'])->name('admin.topups.updateAmount');
 });
 
 //--------------------end stationowner routes-------------------------------------------------------------------------------------
