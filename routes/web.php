@@ -6,6 +6,7 @@ use App\Http\Controllers\ManageVehicleController;
 use App\Http\Controllers\AdminStationOwnerController;
 use App\Http\Controllers\UserLoginManagementController;
 use App\Http\Controllers\CustomerRegistrationController;
+use App\Http\Controllers\StationOwnerTransactionController;
 use App\Http\Controllers\StationOwnerRegistrationController;
 
 Route::get('/', function () {
@@ -52,6 +53,9 @@ Route::middleware(['verify.firebase.session', 'auth'])->group(function () {
     Route::post('/stationowner/registerdata', [StationOwnerRegistrationController::class, 'register'])
         ->name('stationowner.registerdata')
         ->withoutMiddleware(['verify.firebase.session', 'auth']);
+    //manage transactions
+    Route::get('/stationowner/transactions', [StationOwnerTransactionController::class, 'index'])
+        ->name('stationowner.transactions');
 });
 
 //--------------------end stationowner routes-------------------------------------------------------------------------------------
