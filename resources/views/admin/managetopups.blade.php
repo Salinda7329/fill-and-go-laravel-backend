@@ -5,7 +5,7 @@
 @endsection
 
 @section('admin_page_content')
-    <div class="container" style="padding:20px;">
+    <div class="container" style="padding:20px;flex-grow: 1">
         <h2>Pending Topups</h2>
 
         @if (session('success'))
@@ -103,13 +103,6 @@
 @endsection
 
 @section('after_body_section')
-    <!-- DataTables JS -->
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <!-- GLightbox -->
-    <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <script>
         $(document).ready(function() {
             // DataTables init

@@ -77,6 +77,13 @@ body {
     line-height: 1.6;
     color: #333;
     background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+}
+
+html, body {
+  height: 100%; /* Ensure html and body take full viewport height */
+  margin: 0;
 }
 
 .container {
@@ -553,7 +560,6 @@ button,
     min-height: 44px; /* Minimum recommended touch target size */
 }
 
-
 /* Global form protection */
 form,
 .form-group,
@@ -564,10 +570,10 @@ select,
 button,
 .radio-group,
 .checkbox-group {
-  position: relative;
-  z-index: 100; /* High enough to stay above most content */
-  transform: translateZ(0); /* Creates new stacking context */
-  -webkit-transform: translateZ(0); /* For Safari */
+    position: relative;
+    z-index: 100; /* High enough to stay above most content */
+    transform: translateZ(0); /* Creates new stacking context */
+    -webkit-transform: translateZ(0); /* For Safari */
 }
 
 /* Specifically protect interactive elements */
@@ -583,7 +589,6 @@ button,
 [type="submit"],
 [type="reset"],
 [type="button"] {
-  z-index: 101; /* Slightly higher than containers */
-  position: relative;
+    z-index: 101; /* Slightly higher than containers */
+    position: relative;
 }
-

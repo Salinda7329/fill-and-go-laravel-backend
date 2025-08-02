@@ -61,7 +61,7 @@
 
 
     <!-- Footer -->
-    <footer class="footer">
+    <footer class="footer" style="">
         <div class="container">
             <div class="footer-content">
                 <div class="footer-brand">
