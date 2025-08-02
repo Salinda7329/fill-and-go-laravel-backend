@@ -19,9 +19,14 @@ class User extends Authenticatable
         'role',
         'status',
         'firebase_uid',
+        // + add for owners:
+        'station_name',
+        'station_address',
+        'contact_number',
         'created_at',
         'updated_at',
     ];
+
 
     protected $hidden = [
         'password',

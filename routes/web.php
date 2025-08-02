@@ -3,8 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminTopupController;
 use App\Http\Controllers\ManageVehicleController;
+use App\Http\Controllers\AdminStationOwnerController;
 use App\Http\Controllers\UserLoginManagementController;
 use App\Http\Controllers\CustomerRegistrationController;
+use App\Http\Controllers\StationOwnerRegistrationController;
 
 Route::get('/', function () {
     return view('publichomepage');
@@ -18,16 +20,6 @@ Route::middleware(['verify.firebase.session', 'auth'])->group(function () {
     Route::get('/admin/dashboard', function () {
         return view('admin.admindashboard');
     })->name('admin.dashboard');
-});
-//-------------------end admin routes-----------------------------------------------------------------------------------------------
-
-//--------------------stationowner routes-------------------------------------------------------------------------------------------
-Route::middleware(['verify.firebase.session', 'auth'])->group(function () {
-
-    //station owner dashboard
-    Route::get('/stationowner/dashboard', function () {
-        return view('stationowner.stationownerdashborad');
-    })->name('stationowner.dashboard');
 
     //manage topups
     Route::get('/admin/topups', [AdminTopupController::class, 'index'])->name('admin.topups');
@@ -35,6 +27,31 @@ Route::middleware(['verify.firebase.session', 'auth'])->group(function () {
     Route::post('/admin/topups/{id}/reject', [AdminTopupController::class, 'reject'])->name('admin.topups.reject');
     //edit amount of topup
     Route::post('/admin/topups/{id}/update-amount', [AdminTopupController::class, 'updateAmount'])->name('admin.topups.updateAmount');
+    //end manage topups
+
+    //manage stationowners
+    Route::get('/admin/stationowners', [AdminStationOwnerController::class, 'pending'])->name('admin.stationowners');
+    Route::post('/admin/stationowners/{id}/approve', [AdminStationOwnerController::class, 'approve'])->name('admin.stationowners.approve');
+    Route::post('/admin/stationowners/{id}/reject', [AdminStationOwnerController::class, 'reject'])->name('admin.stationowners.reject');
+    //end manage stationowners
+});
+//-------------------end admin routes-----------------------------------------------------------------------------------------------
+
+//--------------------stationowner routes-------------------------------------------------------------------------------------------
+Route::middleware(['verify.firebase.session', 'auth'])->group(function () {
+
+    // station owner dashboard
+    Route::get('/stationowner/dashboard', function () {
+        return view('stationowner.stationownerdashborad');
+    })->name('stationowner.dashboard');
+
+    // register form view
+    Route::get('/stationowner/register', [StationOwnerRegistrationController::class, 'showRegistrationForm'])
+        ->withoutMiddleware(['verify.firebase.session', 'auth']);
+
+    Route::post('/stationowner/registerdata', [StationOwnerRegistrationController::class, 'register'])
+        ->name('stationowner.registerdata')
+        ->withoutMiddleware(['verify.firebase.session', 'auth']);
 });
 
 //--------------------end stationowner routes-------------------------------------------------------------------------------------
@@ -73,8 +90,7 @@ Route::middleware(['verify.firebase.session', 'auth'])->group(function () {
     Route::post('/customer/upload-payment-proof', [App\Http\Controllers\PaymentProofController::class, 'store']);
     //topup history
     Route::get('/customer/topup-history', [\App\Http\Controllers\TopupController::class, 'customerTopupHistory'])
-    ->name('customer.topup.history');
-
+        ->name('customer.topup.history');
 });
 
 //end customer dashboard

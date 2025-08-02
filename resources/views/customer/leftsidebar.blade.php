@@ -12,13 +12,13 @@
         color: #333;
     }
 
-    /* Sidebar Container */
+       /* Sidebar Container */
     .sidebar {
         position: fixed;
-        top: 30px;
+        top: 80px;
         left: 0;
         width: 280px;
-        height: 100vh;
+        height: 90vh;
         background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
         box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
