@@ -87,6 +87,10 @@ Route::middleware(['verify.firebase.session', 'auth'])->group(function () {
     })->name('customer.registervehicle');
     //save vehicle data
     Route::post('/customer/registervehicledata', [ManageVehicleController::class, 'registerVehicle'])->name('customer.registervehicledata');
+    //view vehicle list
+    Route::get('/customer/vehicles', [\App\Http\Controllers\ManageVehicleController::class, 'customerVehicles'])
+    ->name('customer.vehicles');
+
     //end manage vehicles-----------------------------------
 
     //payment proof upload

@@ -12,7 +12,7 @@
         color: #333;
     }
 
-       /* Sidebar Container */
+    /* Sidebar Container */
     .sidebar {
         position: fixed;
         top: 80px;
@@ -583,22 +583,23 @@
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <!-- Sidebar -->
+    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
-        <!-- Sidebar Header -->
         <div class="sidebar-header">
             <button class="sidebar-toggle" id="sidebarToggle">
                 <svg viewBox="0 0 24 24">
                     <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
                 </svg>
             </button>
+            <!-- You can add your logo here if you want -->
         </div>
 
-        <!-- Navigation Menu -->
         <nav class="sidebar-nav">
             <!-- Dashboard -->
             <div class="nav-item">
-                <a href="{{ route('dashboard') }}"
-                    class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" data-tooltip="Dashboard">
+                <a href="{{ route('customer.dashboard') }}"
+                    class="nav-link {{ request()->routeIs('customer.dashboard') ? 'active' : '' }}"
+                    data-tooltip="Dashboard">
                     <svg class="nav-icon" viewBox="0 0 24 24">
                         <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
                     </svg>
@@ -606,63 +607,58 @@
                 </a>
             </div>
 
-            <!-- Stations Dropdown -->
+            <!-- Register Vehicle -->
             <div class="nav-item">
-                <a href="#"
-                    class="nav-link dropdown-toggle {{ request()->routeIs('stations.*') ? 'active' : '' }}"
-                    data-tooltip="Stations">
+                <a href="{{ route('customer.registervehicle') }}"
+                    class="nav-link {{ request()->routeIs('customer.registervehicle') ? 'active' : '' }}"
+                    data-tooltip="Register Vehicle">
                     <svg class="nav-icon" viewBox="0 0 24 24">
                         <path
-                            d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11c-.94.36-1.61 1.26-1.61 2.33 0 1.38 1.12 2.5 2.5 2.5.36 0 .69-.08 1-.21v7.21c0 .55-.45 1-1 1s-1-.45-1-1V14c0-1.1-.9-2-2-2h-1V5c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v16h10v-7.5h1.5v5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V9c0-.69-.28-1.32-.73-1.77zM12 10H6V5h6v5z" />
+                            d="M4 17v1a2 2 0 002 2h2a2 2 0 002-2v-1m4 0v1a2 2 0 002 2h2a2 2 0 002-2v-1M5 10l1-2h12l1 2M7 10V6a2 2 0 012-2h6a2 2 0 012 2v4" />
                     </svg>
-                    <span class="nav-text">Stations</span>
-                    <svg class="nav-arrow" viewBox="0 0 24 24">
-                        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
-                    </svg>
+                    <span class="nav-text">Register Vehicle</span>
                 </a>
-                <div class="nav-dropdown">
-                    <a href="customer/registervehicle"
-                        class="nav-link {{ request()->routeIs('customer.registervehicle') ? 'active' : '' }}">
-                        <span class="nav-text">All Stations</span>
-                    </a>
-                    <a href="#" class="nav-link ">
-                        <span class="nav-text">Add New</span>
-                    </a>
-                </div>
             </div>
 
-            <!-- Top-Ups Dropdown -->
+            <!-- Upload Payment Proof -->
             <div class="nav-item">
-                <a href="#" class="nav-link dropdown-toggle " data-tooltip="Top-Ups">
+                <a href="{{ url('/customer/payment-proof') }}"
+                    class="nav-link {{ request()->is('customer/payment-proof') ? 'active' : '' }}"
+                    data-tooltip="Upload Payment Proof">
                     <svg class="nav-icon" viewBox="0 0 24 24">
-                        <path
-                            d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" />
+                        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h7l2 2h5a2 2 0 012 2v12a2 2 0 01-2 2z" />
                     </svg>
-                    <span class="nav-text">Top-Ups</span>
-                    <svg class="nav-arrow" viewBox="0 0 24 24">
-                        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
-                    </svg>
+                    <span class="nav-text">Upload Payment Proof</span>
                 </a>
-                <div class="nav-dropdown">
-                    <a href="#" class="nav-link ">
-                        <span class="nav-text">Requests</span>
-                    </a>
-                    <a href="#" class="nav-link ">
-                        <span class="nav-text">History</span>
-                    </a>
-                </div>
             </div>
 
-            <!-- Settings -->
+            <!-- My Topup History -->
             <div class="nav-item">
-                <a href="#" class="nav-link data-tooltip="Settings">
+                <a href="{{ route('customer.topup.history') }}"
+                    class="nav-link {{ request()->routeIs('customer.topup.history') ? 'active' : '' }}"
+                    data-tooltip="Topup History">
                     <svg class="nav-icon" viewBox="0 0 24 24">
-                        <path
-                            d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z" />
+                        <path d="M3 6v6a9 9 0 009 9 9 9 0 009-9V6" />
+                        <path d="M9 10v2a2 2 0 002 2h2" />
+                        <path d="M12 8v4" />
                     </svg>
-                    <span class="nav-text">Settings</span>
+                    <span class="nav-text">My Topup History</span>
                 </a>
             </div>
+
+            <!-- Add Vehicle List if needed (optional) -->
+            <div class="nav-item">
+                <a href="{{ route('customer.vehicles') }}"
+                    class="nav-link {{ request()->routeIs('customer.vehicles') ? 'active' : '' }}"
+                    data-tooltip="My Vehicles">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path
+                            d="M4 17v1a2 2 0 002 2h12a2 2 0 002-2v-1M5 10l1-2h12l1 2M7 10V6a2 2 0 012-2h6a2 2 0 012 2v4" />
+                    </svg>
+                    <span class="nav-text">My Vehicles</span>
+                </a>
+            </div>
+
         </nav>
 
         <!-- Logout Button -->
@@ -678,6 +674,7 @@
             </button>
         </form>
     </aside>
+
 
     <!-- Main Content -->
     <main class="main-content">

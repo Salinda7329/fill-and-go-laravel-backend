@@ -103,4 +103,14 @@ class ManageVehicleController extends Controller
             ], 500);
         }
     }
+
+    public function customerVehicles()
+    {
+        $user = Auth::user();
+
+        // Assuming you have a Vehicle model related to the user
+        $vehicles = \App\Models\Vehicle::where('user_id', $user->_id)->get();
+
+        return view('customer.myvehicles', compact('vehicles'));
+    }
 }
