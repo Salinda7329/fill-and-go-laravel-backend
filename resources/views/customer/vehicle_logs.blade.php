@@ -6,13 +6,14 @@
 
 @section('customer_page_content')
     <div class="container" style="padding:20px;flex-grow:1">
-        <h2>My Vehicle Logs</h2>
+        <h2 style="margin-bottom: 18px;">My Vehicle Logs</h2>
+
         @if (count($logs) > 0)
             <div class="table-responsive">
                 <table class="display table" style="width:100%;">
                     <thead>
                         <tr>
-                            <th>Date & Time</th>
+                            <th>#</th>
                             <th>Vehicle Number</th>
                             <th>Amount (Rs.)</th>
                             <th>Litres</th>
@@ -21,14 +22,22 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($logs as $log)
+                        @foreach ($logs as $idx => $log)
                             <tr>
-                                <td>{{ \Carbon\Carbon::parse($log->gate_open_time)->format('Y-m-d H:i:s') }}</td>
-                                <td>{{ $log->vehicle_number ?? '' }}</td>
-                                <td>{{ $log->amount ?? '' }}</td>
-                                <td>{{ $log->litres ?? '' }}</td>
-                                <td>{{ \Carbon\Carbon::parse($log->gate_open_time)->format('Y-m-d H:i:s') }}</td>
-                                <td>{{ \Carbon\Carbon::parse($log->exit_time)->format('Y-m-d H:i:s') }}</td>
+                                <td>{{ $idx + 1 }}</td>
+                                <td>{{ $log->vehicle_number ?? ($log['vehicle_number'] ?? '') }}</td>
+                                <td>{{ $log->amount ?? ($log['amount'] ?? '') }}</td>
+                                <td>{{ $log->litres ?? ($log['litres'] ?? '') }}</td>
+                                <td>
+                                    {{ !empty($log->gate_open_time ?? ($log['gate_open_time'] ?? null))
+                                        ? \Carbon\Carbon::parse($log->gate_open_time ?? $log['gate_open_time'])->format('Y-m-d H:i:s')
+                                        : '-' }}
+                                </td>
+                                <td>
+                                    {{ !empty($log->exit_time ?? ($log['exit_time'] ?? null))
+                                        ? \Carbon\Carbon::parse($log->exit_time ?? $log['exit_time'])->format('Y-m-d H:i:s')
+                                        : '-' }}
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>

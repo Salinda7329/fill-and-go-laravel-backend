@@ -659,6 +659,20 @@
                 </a>
             </div>
 
+            <!-- Vehicle Logs -->
+            <div class="nav-item">
+                <a href="{{ route('customer.vehicle.logs') }}"
+                    class="nav-link {{ request()->routeIs('customer.vehicle.logs') ? 'active' : '' }}"
+                    data-tooltip="Vehicle Logs">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path
+                            d="M7 7h10v2H7V7zm0 4h10v2H7v-2zm0 4h7v2H7v-2zm10.707-9.707a1 1 0 00-1.414 0l-8.586 8.586a1 1 0 101.414 1.414l8.586-8.586a1 1 0 000-1.414z" />
+                    </svg>
+                    <span class="nav-text">Vehicle Logs</span>
+                </a>
+            </div>
+
+
         </nav>
 
         <!-- Logout Button -->

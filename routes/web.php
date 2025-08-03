@@ -103,6 +103,10 @@ Route::middleware(['verify.firebase.session', 'auth'])->group(function () {
     //topup history
     Route::get('/customer/topup-history', [\App\Http\Controllers\TopupController::class, 'customerTopupHistory'])
         ->name('customer.topup.history');
+
+    // Show vehicle logs for the customer
+    Route::get('/customer/vehicle-logs', [\App\Http\Controllers\CustomerVehicleLogController::class, 'index'])
+        ->name('customer.vehicle.logs');
 });
 
 //end customer dashboard
