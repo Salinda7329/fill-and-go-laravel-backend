@@ -8,6 +8,9 @@ use Kreait\Firebase\Factory;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeCustomerMail;
+
 
 class CustomerRegistrationController extends Controller
 {
@@ -47,6 +50,21 @@ class CustomerRegistrationController extends Controller
                 'email' => $user->email,
                 'firebase_uid' => $firebaseUser->uid,
             ]);
+
+            // Send welcome email
+            try {
+                Mail::to($user->email)->send(new WelcomeCustomerMail($user));
+                Log::info('Welcome email sent to user', [
+                    'user_id' => $user->_id,
+                    'email' => $user->email,
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to send welcome email', [
+                    'user_id' => $user->_id,
+                    'email' => $user->email,
+                    'error' => $e->getMessage()
+                ]);
+            }
 
             return response()->json([
                 'success' => true,
