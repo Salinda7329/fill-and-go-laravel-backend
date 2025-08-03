@@ -6,6 +6,9 @@ use App\Models\Topup;
 use App\Models\Account;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Mail\TopupStatusMail;
+use Illuminate\Support\Facades\Mail;
+use App\Models\User;
 
 class AdminTopupController extends Controller
 {
@@ -19,7 +22,6 @@ class AdminTopupController extends Controller
     {
         $topup = Topup::findOrFail($id);
 
-        // Find account of user
         $account = Account::firstOrCreate(
             ['user_id' => $topup->user_id],
             ['balance' => 0]
@@ -31,6 +33,11 @@ class AdminTopupController extends Controller
         $topup->status = 'approved';
         $topup->save();
 
+        $user = User::find($topup->user_id);
+        if ($user) {
+            Mail::to($user->email)->send(new TopupStatusMail($topup, 'approved', $account->balance));
+        }
+
         return redirect()->back()->with('success', 'Topup approved and balance updated.');
     }
 
@@ -39,6 +46,14 @@ class AdminTopupController extends Controller
         $topup = Topup::findOrFail($id);
         $topup->status = 'rejected';
         $topup->save();
+
+        // Fetch account to show current balance (optional for rejection)
+        $account = Account::where('user_id', $topup->user_id)->first();
+
+        $user = User::find($topup->user_id);
+        if ($user) {
+            Mail::to($user->email)->send(new TopupStatusMail($topup, 'rejected', $account ? $account->balance : 0));
+        }
 
         return redirect()->back()->with('error', 'Topup rejected.');
     }
