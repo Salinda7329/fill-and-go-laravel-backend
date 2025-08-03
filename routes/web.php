@@ -78,6 +78,10 @@ Route::middleware(['verify.firebase.session', 'auth'])->group(function () {
         return view('customer.customerdashboard');
     })->name('customer.dashboard');
 
+    // Dashboard stats for AJAX
+    Route::get('/customer/dashboard-stats', [App\Http\Controllers\CustomerDashboardController::class, 'stats'])
+        ->name('customer.dashboard.stats');
+
     //manage vehicles-----------------------------------
     //customer manage vehicles view
 
@@ -89,7 +93,7 @@ Route::middleware(['verify.firebase.session', 'auth'])->group(function () {
     Route::post('/customer/registervehicledata', [ManageVehicleController::class, 'registerVehicle'])->name('customer.registervehicledata');
     //view vehicle list
     Route::get('/customer/vehicles', [\App\Http\Controllers\ManageVehicleController::class, 'customerVehicles'])
-    ->name('customer.vehicles');
+        ->name('customer.vehicles');
 
     //end manage vehicles-----------------------------------
 
